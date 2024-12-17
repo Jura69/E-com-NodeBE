@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 const { model, Schema } = require("mongoose");
 
@@ -37,7 +37,7 @@ const shopSchema = new Schema(
   },
   {
     timestamps: true,
-    collection: COLLECTION_NAME
+    collection: COLLECTION_NAME,
   },
 );
 
