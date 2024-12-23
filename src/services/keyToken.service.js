@@ -20,7 +20,7 @@ class KeyTokenService {
       return tokens ? tokens.publicKey : null;
     } catch (error) {
       console.error('Error creating key token:', error);
-      throw error; // Throw the error to handle it upstream
+      throw error; 
     }
   };
 
