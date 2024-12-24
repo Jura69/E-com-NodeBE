@@ -43,7 +43,7 @@ const clothingSchema = new Schema(
 const electronicSchema = new Schema(
   {
     manufacturer: { type: String, require: true },
-    size: String,
+    model: String,
     color: String,
   },
   {
