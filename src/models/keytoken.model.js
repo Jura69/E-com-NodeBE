@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 const { Schema, model } = require("mongoose"); // Erase if already required
 
@@ -38,4 +38,3 @@ var keyTokenSchema = new Schema(
 
 //Export the model
 module.exports = model(DOCUMENT_NAME, keyTokenSchema);
-

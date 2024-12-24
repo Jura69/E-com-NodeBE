@@ -6,7 +6,11 @@ const crypto = require("crypto");
 const KeyTokenService = require("./keyToken.service");
 const { createTokenPair, verifyJWT } = require("../auth/authUtils");
 const { getIntoData } = require("../utils");
-const { BadRequestError, AuthFailureError, ForbiddenError } = require("../core/error.response");
+const {
+  BadRequestError,
+  AuthFailureError,
+  ForbiddenError,
+} = require("../core/error.response");
 const { findByEmail } = require("./shop.service");
 
 const RoleShop = {
@@ -17,52 +21,43 @@ const RoleShop = {
 };
 
 class AccessService {
+  static handlerRefreshTokenV2 = async ({ keyStore, user, refreshToken }) => {
+    const { userId, email } = user;
 
-  static handlerRefreshToken = async (refreshToken) => {
-
-    //check if token is used and have threat
-    const foundToken = await KeyTokenService.findByRefreshTokenUsed(refreshToken);
-    if(foundToken){
-      //docode who are you?
-      const { userId, email } = await verifyJWT(refreshToken, foundToken.privateKey);
-      console.log({userId, email});
-      //delete all token in keystore
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
       await KeyTokenService.deleteKeyById(userId);
-      throw new ForbiddenError("Something went wrong, please login again");
+      throw new ForbiddenError("Something wrong happened !! Pls relogin");
     }
 
-    const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
-    if(!holderToken){
+    if (keyStore.refreshToken !== refreshToken) {
       throw new AuthFailureError("Shop not registered");
     }
-    //verify token
-    const { userId, email } = await verifyJWT(refreshToken, holderToken.privateKey);
-    console.log('[2]--',{userId, email});
-    //check userId
+
     const foundShop = await findByEmail({ email });
-    if(!foundShop){
-      throw new AuthFailureError("Shop not registered");
+    if (!foundShop) {
+      throw new AuthFailureError("Shop not registered 2");
     }
 
-    // Create new pair token
-    const tokens =  await createTokenPair({ userId, email }, holderToken.publicKey, holderToken.privateKey);
+    const tokens = await createTokenPair(
+      { userId, email },
+      keyStore.publicKey,
+      keyStore.privateKey,
+    );
 
-    // Update token
-    await holderToken.updateOne({
+    await keyStore.updateOne({
       $set: {
         refreshToken: tokens.refreshToken,
       },
       $addToSet: {
-        refreshTokensUsed: refreshToken, // Da duoc dung de lay token moi
-      }
-    })
-
+        refreshTokensUsed: refreshToken, // đã được sử dụng để lấy token mới rồi
+      },
+    });
 
     return {
-      user: { userId, email },
+      user,
       tokens,
-    }
-  }
+    };
+  };
 
   static logOut = async (keyStore) => {
     const id = keyStore._id; // Ensure this is correctly passed
@@ -162,4 +157,3 @@ class AccessService {
 }
 
 module.exports = AccessService;
-

@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 //level0
 const dev = {

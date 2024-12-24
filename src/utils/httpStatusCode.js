@@ -1,4 +1,5 @@
 module.exports = {
-    StatusCodes: require('./statusCodes'),
-    ReasonPhrases: require('./reasonPhrases')
-}
+  StatusCodes: require("./statusCodes"),
+  ReasonPhrases: require("./reasonPhrases"),
+};
+
