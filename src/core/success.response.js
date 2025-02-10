@@ -49,4 +49,3 @@ module.exports = {
   CREATED,
   SuccessResponse,
 };
-

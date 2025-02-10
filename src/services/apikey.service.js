@@ -13,4 +13,3 @@ const findById = async (key) => {
 module.exports = {
   findById,
 };
-
