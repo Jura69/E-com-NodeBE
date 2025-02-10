@@ -8,6 +8,8 @@ const {
   findAllDraftsForShop, 
   unPublishProductByShop,
   searchProductByUser,
+  findAllProducts,
+  findProduct,
  } = require("../models/repositories/product.repo");
 // define factory class to create product
 class ProductFactory {
@@ -23,6 +25,14 @@ class ProductFactory {
         throw new BadRequestError(`Invalid Product Types ${type}`);
       }
       return new productClass(payload).createProduct();
+    }
+
+    static async updateProduct(type, payload) {
+      const productClass = ProductFactory.productRegistry[type];
+      if (!productClass) {
+        throw new BadRequestError(`Invalid Product Types ${type}`);
+      }
+      return new productClass(payload).updateProduct();
     }
 
     //put//
@@ -47,22 +57,22 @@ class ProductFactory {
       return await findAllPublishForShop({ query, limit, skip });
     }
 
-    static async getListSearchProduct({keySearch}){
+    static async searchProducts({keySearch}){
       return await searchProductByUser({ keySearch });
     }
+
+    static async findAllProducts({limit=50, sort="ctime", page=1, filter={isPublished: true}}){
+      return await findAllProducts({ limit, sort, page, filter,
+        select: ['product_name', 'product_thumb', 'product_price']
+       });
+    }
+
+    static async findProduct({product_id}){
+      return await findProduct({ product_id, unSelect: ['__v'] });
+    }
+
     //end query
 }
-
-/*
-    product_name: { type: String, required: true },
-    product_thumb: { type: String, required: true },
-    product_description: String,
-    product_price: { type: Number, required: true },
-    product_quantity: { type: Number, required: true },
-    product_type: { type: String, required: true, enum: ['Electronics', 'Clothing', 'Furniture'] },
-    product_shop: { type: Schema.Types.ObjectId, ref: 'Shop' },
-    product_attributes: { type: Schema.Types.Mixed, required: true }
-*/
 
 // define base product class
 class Product {
