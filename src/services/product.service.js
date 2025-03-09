@@ -12,7 +12,13 @@ const {
   findProduct,
   updateProductById,
 } = require("../models/repositories/product.repo");
-const { removeUndefinedObject, updateNestedObjectParser, cleanAndFlattenObject } = require("../utils");
+const {
+  removeUndefinedObject,
+  updateNestedObjectParser,
+  cleanAndFlattenObject,
+} = require("../utils");
+const { insertInvetory } = require("../models/repositories/inventory.repo");
+
 // define factory class to create product
 class ProductFactory {
   static productRegistry = {}; // key-class
@@ -47,7 +53,6 @@ class ProductFactory {
   }
   //end put//
 
-
   //query
   static async findAllDraftsForShop({ product_shop, limit = 50, skip = 0 }) {
     const query = { product_shop, isDraft: true };
@@ -63,15 +68,23 @@ class ProductFactory {
     return await searchProductByUser({ keySearch });
   }
 
-  static async findAllProducts({ limit = 50, sort = "ctime", page = 1, filter = { isPublished: true } }) {
+  static async findAllProducts({
+    limit = 50,
+    sort = "ctime",
+    page = 1,
+    filter = { isPublished: true },
+  }) {
     return await findAllProducts({
-      limit, sort, page, filter,
-      select: ['product_name', 'product_thumb', 'product_price']
+      limit,
+      sort,
+      page,
+      filter,
+      select: ["product_name", "product_thumb", "product_price"],
     });
   }
 
   static async findProduct({ product_id }) {
-    return await findProduct({ product_id, unSelect: ['__v'] });
+    return await findProduct({ product_id, unSelect: ["__v"] });
   }
 
   //end query
@@ -101,12 +114,23 @@ class Product {
 
   //create new product
   async createProduct(product_id) {
-    return await product.create({ ...this, _id: product_id });
+    const newProduct = await product.create({ ...this, _id: product_id });
+  
+    if (newProduct) {
+      // add product_stock in inventory collection
+      await insertInvetory({
+        productId: newProduct._id,
+        shopId: this.product_shop,
+        stock: this.product_quantity,
+      });
+    }
+  
+    return newProduct;
   }
 
   //update product
   async updateProduct(product_id, bodyUpdate) {
-    return await updateProductById({product_id, bodyUpdate, model: product});
+    return await updateProductById({ product_id, bodyUpdate, model: product });
   }
 }
 
@@ -126,19 +150,22 @@ class Clothing extends Product {
   }
 
   async updateProduct(productId) {
-
     /* 1. remove attr has null value, undefined value */
-    const objectParams = removeUndefinedObject(this)
+    const objectParams = removeUndefinedObject(this);
     /* 2. check xem update cho nao */
-    if (objectParams.product_attributes){
+    if (objectParams.product_attributes) {
       // update chill
       await updateProductById({
-        productId, 
+        productId,
         bodyUpdate: cleanAndFlattenObject(objectParams.product_attributes),
-        model: clothing });
+        model: clothing,
+      });
     }
-    const updateProduct = await super.updateProduct(productId, cleanAndFlattenObject(objectParams));
-    return updateProduct; 
+    const updateProduct = await super.updateProduct(
+      productId,
+      cleanAndFlattenObject(objectParams),
+    );
+    return updateProduct;
   }
 }
 
@@ -159,23 +186,25 @@ class Electronics extends Product {
   }
 
   async updateProduct(productId) {
-
     /* 1. remove attr has null value, undefined value */
-    const objectParams = cleanAndFlattenObject(this)
-    
+    const objectParams = cleanAndFlattenObject(this);
+
     /* 2. check xem update cho nao */
-    if (objectParams.product_attributes){
+    if (objectParams.product_attributes) {
       // update chill
       await updateProductById({
-        productId, 
+        productId,
         bodyUpdate: cleanAndFlattenObject(objectParams.product_attributes),
-        model: electronic });
+        model: electronic,
+      });
     }
-    const updateProduct = await super.updateProduct(productId, cleanAndFlattenObject(objectParams));
-    return updateProduct; 
+    const updateProduct = await super.updateProduct(
+      productId,
+      cleanAndFlattenObject(objectParams),
+    );
+    return updateProduct;
   }
-
-} 
+}
 
 ProductFactory.registerProductType("Clothing", Clothing);
 ProductFactory.registerProductType("Electronics", Electronics);
