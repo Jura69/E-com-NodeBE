@@ -2,6 +2,9 @@
 
 const e = require("express");
 const _ = require("lodash");
+const {Types} = require("mongoose");
+
+const convertToObjectIdMongodb = (id) => new Types.ObjectId(id);  
 
 const getIntoData = ({ fields = [], object = {} }) => {
   return _.pick(object, fields);
@@ -77,5 +80,6 @@ module.exports = {
   removeUndefinedObject,
   updateNestedObjectParser,
   cleanAndFlattenObject,
+  convertToObjectIdMongodb,
 };
 
