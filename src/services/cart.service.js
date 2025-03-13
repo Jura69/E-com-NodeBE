@@ -42,23 +42,31 @@ class CartService {
     /// END REPO CART //// 
 
     static async addToCart({ userId, product = {} }) {
-        // check cart ton tai hay khong? 
-        const userCart = await cart.findOne({ cart_userId: userId });
-
+        // Find the user's cart
+        const userCart = await cart.findOne({ cart_userId: userId, cart_state: 'active' });
+    
         if (!userCart) {
             // Create a new cart if it doesn't exist
             return await CartService.createUserCart({ userId, product });
         }
-
-        // neu co gio hang roi nhung cua co san pham?
+    
+        // If the cart exists but is empty, add the product
         if (!userCart.cart_products.length) {
-            userCart.cart_products = [product]
-            return await userCart.save()
+            userCart.cart_products.push(product);
+            return await userCart.save();
         }
-
-        // gio hang ton tai, va co san pham nay thi update quantity
-        return await CartService.updateUserCartQuantity({ userId, product })
-
+    
+        // Check if the product already exists in the cart
+        const productExists = userCart.cart_products.some(p => p.productId.toString() === product.productId);
+    
+        if (productExists) {
+            // Update the quantity if the product exists
+            return await CartService.updateUserCartQuantity({ userId, product });
+        } else {
+            // Add the product to the cart if it doesn't exist
+            userCart.cart_products.push(product);
+            return await userCart.save();
+        }
     }
 
     /*
