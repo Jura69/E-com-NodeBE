@@ -49,7 +49,7 @@ const initRedis = async () => {
   });
 
   redisInstance.on(statusConnectRedis.ERROR, (err) => {
-    console.log(`Redis - Connection status: error ${err}`);
+    console.log(`Redis - Connection status: ${err}`);
     handleTimeoutError();
   });
 
