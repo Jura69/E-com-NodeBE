@@ -18,16 +18,27 @@ app.use(
 
 // init db
 require("./dbs/init.mongodb");
+
+// init redis
 const { initRedis } = require("./dbs/init.redis.js");
+let redisClient = null;
 
-// Initialize Redis with proper async handling
-initRedis().then();
-
-// test pub.sub redis
-require("./tests/inventory.test");
-const productTest = require("./tests/product.test");
-productTest.purchaseProduct("product:001", 10);
+// test
+const startRedisTests = () => {
+  require("./tests/inventory.test");
+  const productTest = require("./tests/product.test");
+  productTest.purchaseProduct("product:001", 10);
+};
 //
+
+// Khởi tạo Redis
+initRedis().then((client) => {
+  redisClient = client;
+  console.log("Redis initialized successfully!");
+
+  startRedisTests();
+})
+
 
 // const {checkOverload} = require('./helpers/check.connect')
 // checkOverload()
@@ -36,7 +47,6 @@ productTest.purchaseProduct("product:001", 10);
 app.use("/", require("./routes"));
 
 // handling errors
-
 app.use((req, res, next) => {
   const error = new Error("Not Found");
   error.status = 404;
