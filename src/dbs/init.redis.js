@@ -31,49 +31,36 @@ const handleTimeoutError = () => {
 };
 
 const initRedis = async () => {
-  try {
-    // Create Redis client with configuration
-    const redisInstance = createClient(redisConfig);
+  const redisInstance = createClient(redisConfig);
 
-    // Setup event handlers - attach them directly to the instance
-    redisInstance.on(statusConnectRedis.CONNECT, () => {
-      console.log("Redis - Connection status: connected");
-      clearTimeout(connectionTimeout);
-    });
+  redisInstance.on(statusConnectRedis.CONNECT, () => {
+    console.log("Redis - Connection status: connected");
+    clearTimeout(connectionTimeout);
+  });
 
-    redisInstance.on(statusConnectRedis.END, () => {
-      console.log("Redis - Connection status: disconnected");
-      //connect retry
-      handleTimeoutError();
-    });
+  redisInstance.on(statusConnectRedis.END, () => {
+    console.log("Redis - Connection status: disconnected");
+    handleTimeoutError();
+  });
 
-    redisInstance.on(statusConnectRedis.RECONNECT, () => {
-      console.log("Redis - Connection status: reconnecting");
-      clearTimeout(connectionTimeout);
-    });
+  redisInstance.on(statusConnectRedis.RECONNECT, () => {
+    console.log("Redis - Connection status: reconnecting");
+    clearTimeout(connectionTimeout);
+  });
 
-    redisInstance.on(statusConnectRedis.ERROR, (err) => {
-      console.log(`Redis - Connection status: error ${err}`);
-      //connect retry
-      handleTimeoutError();
-    });
+  redisInstance.on(statusConnectRedis.ERROR, (err) => {
+    console.log(`Redis - Connection status: error ${err}`);
+    handleTimeoutError();
+  });
 
-    // Connect to Redis
-    await redisInstance.connect();
+  await redisInstance.connect();
+  client.instance = redisInstance;
 
-    // Store instance
-    client.instance = redisInstance;
-
-    return redisInstance;
-  } catch (error) {
-    console.error("Failed to initialize Redis:", error);
-    throw error;
-  }
+  return redisInstance;
 };
 
 const getRedis = () => client;
 
-// close redis
 const closeRedis = async () => {
   if (client.instance) {
     await client.instance.quit();
