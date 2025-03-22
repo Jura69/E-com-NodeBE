@@ -16,8 +16,23 @@ app.use(
   }),
 );
 
+
+
 // init db
 require("./dbs/init.mongodb");
+const { initRedis } = require ('./dbs/init.redis.js');
+
+// Initialize Redis with proper async handling
+initRedis()
+  .then(() => console.log('Redis initialized successfully'))
+  .catch(err => console.error('Failed to initialize Redis:', err));
+
+// test pub.sub redis
+require('./tests/inventory.test');
+const productTest = require('./tests/product.test');
+productTest.purchaseProduct('product:001', 10);
+//
+
 // const {checkOverload} = require('./helpers/check.connect')
 // checkOverload()
 

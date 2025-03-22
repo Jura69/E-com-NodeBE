@@ -4,7 +4,7 @@ const express = require('express')
 const inventoryController = require('../../controllers/inventory.controller')
 
 const router = express.Router()
-const { asyncHandler } = require('../../auth/checkAuth')
+const  asyncHandler  = require('../../helpers/asyncHandler');
 
 const { authenticationV2 } = require('../../auth/authUtils')
 

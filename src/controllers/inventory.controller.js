@@ -8,7 +8,7 @@ class InventoryController {
     addStockToInventory = async (req, res, next) => {
         //new
         new SuccessResponse({
-            message: 'Create new Cart addStockToInventory',
+            message: 'Create new addStockToInventory',
             metadata: await InventoryService.addStockToInventory(req.body)
         }).send(res)
     }
