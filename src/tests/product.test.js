@@ -1,14 +1,14 @@
-const redisPubsubService = require('../services/redisPubsub.service');
+const redisPubsubService = require("../services/redisPubsub.service");
 
 class ProductServiceTest {
   purchaseProduct(productId, quantity) {
     const order = {
       productId,
-      quantity
+      quantity,
     };
 
-    console.log('productId', productId);
-    redisPubsubService.publish('purchase_events', JSON.stringify(order));
+    console.log("productId", productId);
+    redisPubsubService.publish("purchase_events", JSON.stringify(order));
   }
 }
 

@@ -79,7 +79,12 @@ class ProductFactory {
       sort,
       page,
       filter,
-      select: ["product_name", "product_thumb", "product_price", "product_shop"],
+      select: [
+        "product_name",
+        "product_thumb",
+        "product_price",
+        "product_shop",
+      ],
     });
   }
 
@@ -115,7 +120,7 @@ class Product {
   //create new product
   async createProduct(product_id) {
     const newProduct = await product.create({ ...this, _id: product_id });
-  
+
     if (newProduct) {
       // add product_stock in inventory collection
       await insertInvetory({
@@ -124,7 +129,7 @@ class Product {
         stock: this.product_quantity,
       });
     }
-  
+
     return newProduct;
   }
 

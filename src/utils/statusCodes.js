@@ -342,4 +342,3 @@ module.exports = {
    */
   NETWORK_AUTHENTICATION_REQUIRED: 511,
 };
-

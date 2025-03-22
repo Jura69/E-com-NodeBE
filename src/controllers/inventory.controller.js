@@ -1,17 +1,17 @@
-'use strict'
+"use strict";
 
-const InventoryService = require("../services/inventory.service")
-const { SuccessResponse } = require('../core/success.response')
+const InventoryService = require("../services/inventory.service");
+const { SuccessResponse } = require("../core/success.response");
 
 class InventoryController {
-
-    addStockToInventory = async (req, res, next) => {
-        //new
-        new SuccessResponse({
-            message: 'Create new addStockToInventory',
-            metadata: await InventoryService.addStockToInventory(req.body)
-        }).send(res)
-    }
+  addStockToInventory = async (req, res, next) => {
+    //new
+    new SuccessResponse({
+      message: "Create new addStockToInventory",
+      metadata: await InventoryService.addStockToInventory(req.body),
+    }).send(res);
+  };
 }
 
-module.exports = new InventoryController()
+module.exports = new InventoryController();
+

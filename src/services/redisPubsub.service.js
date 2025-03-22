@@ -1,5 +1,5 @@
-const { createClient } = require('redis');
-const redisConfig = require('../configs/config.redis');
+const { createClient } = require("redis");
+const redisConfig = require("../configs/config.redis");
 
 class RedisPubSubService {
   constructor() {
@@ -13,18 +13,20 @@ class RedisPubSubService {
       // Create publisher client
       this.publisher = createClient(redisConfig);
       await this.publisher.connect();
-      
+
       // Create subscriber client
       this.subscriber = createClient(redisConfig);
       await this.subscriber.connect();
-      
+
       // Handle errors
-      this.publisher.on('error', (err) => console.error('Redis Publisher Error:', err));
-      this.subscriber.on('error', (err) => console.error('Redis Subscriber Error:', err));
-      
-      console.log('Redis PubSub initialized successfully');
+      this.publisher.on("error", (err) =>
+        console.error("Redis Publisher Error:", err),
+      );
+      this.subscriber.on("error", (err) =>
+        console.error("Redis Subscriber Error:", err),
+      );
     } catch (error) {
-      console.error('Failed to initialize Redis PubSub:', error);
+      console.error("Failed to initialize Redis PubSub:", error);
       throw error;
     }
   }
@@ -32,9 +34,9 @@ class RedisPubSubService {
   async publish(channel, message) {
     // Ensure init has completed
     await this.initPromise;
-    
+
     try {
-      if (typeof message !== 'string') {
+      if (typeof message !== "string") {
         message = JSON.stringify(message);
       }
       return await this.publisher.publish(channel, message);
@@ -47,12 +49,12 @@ class RedisPubSubService {
   async subscribe(channel, callback) {
     // Ensure init has completed
     await this.initPromise;
-    
+
     try {
       if (!this.subscriber) {
-        throw new Error('Redis subscriber not initialized');
+        throw new Error("Redis subscriber not initialized");
       }
-      
+
       await this.subscriber.subscribe(channel, (message) => {
         try {
           // Try to parse message as JSON if it's a JSON string
@@ -78,16 +80,11 @@ class RedisPubSubService {
     try {
       if (this.subscriber) await this.subscriber.quit();
       if (this.publisher) await this.publisher.quit();
-      console.log('Redis PubSub connections closed');
+      console.log("Redis PubSub connections closed");
     } catch (error) {
-      console.error('Error closing Redis PubSub connections:', error);
+      console.error("Error closing Redis PubSub connections:", error);
     }
   }
 }
 
 module.exports = new RedisPubSubService();
-
-
-
-
-

@@ -1,17 +1,16 @@
-'use strict'
+"use strict";
 
-const CheckoutService = require("../services/checkout.service")
-const { SuccessResponse } = require('../core/success.response')
+const CheckoutService = require("../services/checkout.service");
+const { SuccessResponse } = require("../core/success.response");
 
 class CheckoutController {
-
-    checkoutReview = async (req, res, next) => {
-        //new
-        new SuccessResponse({
-            message: 'Create new Checkout success',
-            metadata: await CheckoutService.checkoutReview(req.body)
-        }).send(res)
-    }
+  checkoutReview = async (req, res, next) => {
+    //new
+    new SuccessResponse({
+      message: "Create new Checkout success",
+      metadata: await CheckoutService.checkoutReview(req.body),
+    }).send(res);
+  };
 }
 
-module.exports = new CheckoutController()
+module.exports = new CheckoutController();

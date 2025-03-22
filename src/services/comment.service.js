@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-const Comment = require('../models/comment.model');
+const Comment = require("../models/comment.model");
 
 /*
 Key features: Comment service
@@ -8,17 +8,19 @@ Key features: Comment service
 + get a list of comments [User, Shop]
 + delete a comment [user | Shop | Admin]
 */
-'use strict';
 
 class CommentService {
   static async createComment({
-    productId, userId, content, parentCommentId = null
+    productId,
+    userId,
+    content,
+    parentCommentId = null,
   }) {
     const comment = new Comment({
       comment_productId: productId,
       comment_userId: userId,
       comment_content: content,
-      comment_parentId: parentCommentId
+      comment_parentId: parentCommentId,
     });
 
     let rightValue;
@@ -26,8 +28,8 @@ class CommentService {
       // reply comment
       const maxRightValue = await Comment.findOne(
         { comment_productId: convertToObjectIdMongodb(productId) },
-        'comment_right',
-        { sort: { comment_right: -1 } }
+        "comment_right",
+        { sort: { comment_right: -1 } },
       );
       if (maxRightValue) {
         rightValue = maxRightValue.right + 1;
@@ -44,6 +46,5 @@ class CommentService {
     return comment;
   }
 }
-
 
 module.exports = CommenntService;

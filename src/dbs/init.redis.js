@@ -1,84 +1,84 @@
-const { createClient } = require('redis');
-const redisConfig = require('../configs/config.redis');
-const { RedisErrorResponse } = require('../core/error.response');
+const { createClient } = require("redis");
+const redisConfig = require("../configs/config.redis");
+const { RedisErrorResponse } = require("../core/error.response");
 
 let client = {};
 const statusConnectRedis = {
-    CONNECT: 'connect',
-    END: 'end',
-    RECONNECT: 'reconnecting',
-    ERROR: 'error'
+  CONNECT: "connect",
+  END: "end",
+  RECONNECT: "reconnecting",
+  ERROR: "error",
 };
 
 let connectionTimeout;
 
 const REDIS_CONNECT_TIMEOUT = 10000;
 const REDIS_CONNECT_MESSAGE = {
-    code: -99,
-    message: {
-        vn: 'Redis loi roi anh em oi',
-        en: 'Service connection error'
-    }
+  code: -99,
+  message: {
+    vn: "Redis loi roi anh em oi",
+    en: "Service connection error",
+  },
 };
-  
+
 const handleTimeoutError = () => {
-    connectionTimeout = setTimeout(() => {
-        throw new RedisErrorResponse({
-            message: REDIS_CONNECT_MESSAGE.message.vn,
-            statusCode: REDIS_CONNECT_MESSAGE.code
-        });
-    }, REDIS_CONNECT_TIMEOUT);
+  connectionTimeout = setTimeout(() => {
+    throw new RedisErrorResponse({
+      message: REDIS_CONNECT_MESSAGE.message.vn,
+      statusCode: REDIS_CONNECT_MESSAGE.code,
+    });
+  }, REDIS_CONNECT_TIMEOUT);
 };
 
 const initRedis = async () => {
-    try {
-        // Create Redis client with configuration
-        const redisInstance = createClient(redisConfig);
-        
-        // Setup event handlers - attach them directly to the instance
-        redisInstance.on(statusConnectRedis.CONNECT, () => {
-            console.log('Redis - Connection status: connected');
-            clearTimeout(connectionTimeout);
-        });
+  try {
+    // Create Redis client with configuration
+    const redisInstance = createClient(redisConfig);
 
-        redisInstance.on(statusConnectRedis.END, () => {
-            console.log('Redis - Connection status: disconnected');
-            //connect retry
-            handleTimeoutError();
-        });
+    // Setup event handlers - attach them directly to the instance
+    redisInstance.on(statusConnectRedis.CONNECT, () => {
+      console.log("Redis - Connection status: connected");
+      clearTimeout(connectionTimeout);
+    });
 
-        redisInstance.on(statusConnectRedis.RECONNECT, () => {
-            console.log('Redis - Connection status: reconnecting');
-            clearTimeout(connectionTimeout);
-        });
+    redisInstance.on(statusConnectRedis.END, () => {
+      console.log("Redis - Connection status: disconnected");
+      //connect retry
+      handleTimeoutError();
+    });
 
-        redisInstance.on(statusConnectRedis.ERROR, (err) => {
-            console.log(`Redis - Connection status: error ${err}`);
-            //connect retry
-            handleTimeoutError();
-        });
-        
-        // Connect to Redis
-        await redisInstance.connect();
-        
-        // Store instance
-        client.instance = redisInstance;
-        
-        return redisInstance;
-    } catch (error) {
-        console.error('Failed to initialize Redis:', error);
-        throw error;
-    }
-}
+    redisInstance.on(statusConnectRedis.RECONNECT, () => {
+      console.log("Redis - Connection status: reconnecting");
+      clearTimeout(connectionTimeout);
+    });
+
+    redisInstance.on(statusConnectRedis.ERROR, (err) => {
+      console.log(`Redis - Connection status: error ${err}`);
+      //connect retry
+      handleTimeoutError();
+    });
+
+    // Connect to Redis
+    await redisInstance.connect();
+
+    // Store instance
+    client.instance = redisInstance;
+
+    return redisInstance;
+  } catch (error) {
+    console.error("Failed to initialize Redis:", error);
+    throw error;
+  }
+};
 
 const getRedis = () => client;
 
 // close redis
 const closeRedis = async () => {
-    if (client.instance) {
-        await client.instance.quit();
-        console.log('Redis connection closed');
-    }
-}
+  if (client.instance) {
+    await client.instance.quit();
+    console.log("Redis connection closed");
+  }
+};
 
-module.exports = { initRedis, getRedis, closeRedis }
+module.exports = { initRedis, getRedis, closeRedis };

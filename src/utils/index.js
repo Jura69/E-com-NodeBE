@@ -2,46 +2,45 @@
 
 const e = require("express");
 const _ = require("lodash");
-const {Types} = require("mongoose");
+const { Types } = require("mongoose");
 
-const convertToObjectIdMongodb = (id) => new Types.ObjectId(id);  
+const convertToObjectIdMongodb = (id) => new Types.ObjectId(id);
 
 const getIntoData = ({ fields = [], object = {} }) => {
   return _.pick(object, fields);
 };
 
-
 // [a, b, c] => {a: 1, b: 1, c: 1}
 const getSelectData = (selcet = []) => {
-  return Object.fromEntries(selcet.map(el => [el, 1]));
-}
+  return Object.fromEntries(selcet.map((el) => [el, 1]));
+};
 
 // [a, b, c] => {a: 0, b: 0, c: 0}
 const unGetSelectData = (selcet = []) => {
-  return Object.fromEntries(selcet.map(el => [el, 0]));
-}
+  return Object.fromEntries(selcet.map((el) => [el, 0]));
+};
 
-const removeUndefinedObject = obj => {
-  Object.keys(obj).forEach(k => {
+const removeUndefinedObject = (obj) => {
+  Object.keys(obj).forEach((k) => {
     if (obj[k] == undefined || obj[k] == null) {
       delete obj[k];
     }
-  })
+  });
   return obj;
-}
+};
 
-const updateNestedObjectParser = obj => {
+const updateNestedObjectParser = (obj) => {
   const final = {};
 
-  Object.keys(obj).forEach(k => {
-    if (typeof obj[k] === 'object' && !Array.isArray(obj[k])) {
+  Object.keys(obj).forEach((k) => {
+    if (typeof obj[k] === "object" && !Array.isArray(obj[k])) {
       const response = updateNestedObjectParser(obj[k]);
-      Object.keys(response).forEach(a => {
-        final[`${k}.${a}`] = response[a]; 
+      Object.keys(response).forEach((a) => {
+        final[`${k}.${a}`] = response[a];
       });
-    }else {
+    } else {
       final[k] = obj[k];
-    } 
+    }
   });
 
   return final;
@@ -59,7 +58,7 @@ const cleanAndFlattenObject = (obj) => {
     }
 
     // Flatten nested objects
-    if (typeof value === 'object' && !Array.isArray(value)) {
+    if (typeof value === "object" && !Array.isArray(value)) {
       const response = cleanAndFlattenObject(value);
       Object.keys(response).forEach((a) => {
         final[`${k}.${a}`] = response[a];
@@ -72,7 +71,6 @@ const cleanAndFlattenObject = (obj) => {
   return final;
 };
 
-
 module.exports = {
   getIntoData,
   getSelectData,
@@ -82,4 +80,3 @@ module.exports = {
   cleanAndFlattenObject,
   convertToObjectIdMongodb,
 };
-
