@@ -8,7 +8,6 @@ const connectString = `mongodb://${host}:${port}/${name}`;
 
 const { countConnect } = require("../helpers/check.connect");
 
-console.log(connectString);
 class Database {
   constructor() {
     this.connect();
@@ -30,6 +29,7 @@ class Database {
       })
       .catch((err) => console.log("Error Connect MongoDB"));
   }
+
   static getInstance() {
     if (!Database.instance) {
       Database.instance = new Database();
