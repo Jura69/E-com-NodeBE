@@ -1,16 +1,21 @@
 "use strict";
 
 const { SuccessResponse } = require("../core/success.response");
-const { createComment } = require("../services/comment.service");
+const { createComment, getCommentsByParentId } = require("../services/comment.service");
 
 class CommentController {
   createComment = async (req, res, next) => {
-    const newSuccessResponse = new SuccessResponse({
+    new SuccessResponse({
       message: "create new comment",
       metadata: await createComment(req.body),
-    });
-    newSuccessResponse.send(res);
+    }).send(res);
+  };
+
+  getCommentsByParentId = async (req, res, next) => {
+    new SuccessResponse({
+      message: "parent comment",
+      metadata: await getCommentsByParentId(req.query),
+    }).send(res);
   };
 }
-
 module.exports = new CommentController();
