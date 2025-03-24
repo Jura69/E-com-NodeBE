@@ -2,6 +2,7 @@
 
 const Comment = require("../models/comment.model");
 const { convertToObjectIdMongodb } = require("../utils");
+const { findProduct } = require("../models/repositories/product.repo");
 
 /*
 Key features: Comment service
@@ -66,9 +67,9 @@ class CommentService {
       );
 
       if (maxRightValue) {
-        rightValue = maxRightValue.comment_right + 1; 
+        rightValue = maxRightValue.comment_right + 1;
       } else {
-        rightValue = 1; 
+        rightValue = 1;
       }
     }
 
@@ -89,12 +90,29 @@ class CommentService {
     if (parentCommentId) {
       const parent = await Comment.findById(parentCommentId)
       if (!parent) throw new NotFoundError('Not found comment for product')
-  
+
       const comments = await Comment.find({
         comment_productId: convertToObjectIdMongodb(productId),
         comment_left: { $gt: parent.comment_left },
         comment_right: { $lte: parent.comment_right }
       })
+        .select({
+          comment_left: 1,
+          comment_right: 1,
+          comment_content: 1,
+          comment_parentId: 1
+        })
+        .sort({
+          comment_left: 1
+        })
+
+      return comments
+    }
+
+    const comments = await Comment.find({
+      comment_productId: convertToObjectIdMongodb(productId),
+      comment_parentId: parentCommentId
+    })
       .select({
         comment_left: 1,
         comment_right: 1,
@@ -104,26 +122,67 @@ class CommentService {
       .sort({
         comment_left: 1
       })
-  
-      return comments
-    }
-
-    const comments = await Comment.find({
-      comment_productId: convertToObjectIdMongodb(productId),
-      comment_parentId: parentCommentId 
-    })
-    .select({
-      comment_left: 1,
-      comment_right: 1,
-      comment_content: 1,
-      comment_parentId: 1
-    })
-    .sort({
-      comment_left: 1
-    })
 
     return comments
-  }  
+  }
+
+  // delete comments
+  static async  deleteComment({ commentId, productId }) {
+    // check the product exists in the database
+    const foundProduct = await findProduct({
+      product_id: productId
+    });
+
+    if (!foundProduct) {
+      throw new NotFoundError('product not found');
+    }
+
+    // 1. determine the left and right values of the commentId
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      throw new NotFoundError('Comment not found');
+    }
+
+    const leftValue = comment.comment_left;
+    const rightValue = comment.comment_right;
+
+    // 2. calculate the width
+    const width = rightValue - leftValue + 1;
+
+    // 3. delete all child comments
+    await Comment.deleteMany({
+      comment_productId: convertToObjectIdMongodb(productId),
+      comment_left: { $gte: leftValue },
+      comment_right: { $lte: rightValue }
+    });
+
+    // 4. update the left and right values of the remaining comments
+    await Comment.updateMany(
+      {
+        comment_productId: convertToObjectIdMongodb(productId),
+        comment_right: { $gt: rightValue }
+      },
+      {
+        $inc: { comment_right: -width }
+      }
+    );
+
+    await Comment.updateMany(
+      {
+        comment_productId: convertToObjectIdMongodb(productId),
+        comment_left: { $gt: rightValue }
+      },
+      {
+        $inc: { comment_right: -width }
+      }
+    );
+
+    return true;
+
+  }
+
+
 }
 
 module.exports = CommentService;
