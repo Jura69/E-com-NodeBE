@@ -18,6 +18,7 @@ const {
   cleanAndFlattenObject,
 } = require("../utils");
 const { insertInvetory } = require("../models/repositories/inventory.repo");
+const pushNotiToSystem = require("./notification.service");
 
 // define factory class to create product
 class ProductFactory {
@@ -128,6 +129,17 @@ class Product {
         shopId: this.product_shop,
         stock: this.product_quantity,
       });
+      // push notification to system collection
+      pushNotiToSystem({
+        type: 'SHOP-001',
+        receivedId: 1,
+        senderId: this.product_shop,
+        options: {
+          product_name: this.product_name,
+          shope_name: this.product_shop
+        }
+      }).then(rs => console.log(rs))
+        .catch(console.error);
     }
 
     return newProduct;
@@ -137,6 +149,8 @@ class Product {
   async updateProduct(product_id, bodyUpdate) {
     return await updateProductById({ product_id, bodyUpdate, model: product });
   }
+
+
 }
 
 // Define sub-class for different product types Clothing
